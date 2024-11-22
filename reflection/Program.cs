@@ -67,7 +67,7 @@ class Program
         Console.WriteLine($"Время десериализации: {manualDeserializationTime} ms");
 
 
-        // 5. JSON Deserialization
+        // JSON Deserialization
         Console.WriteLine("\nJSON Deserialization:");
         sw.Restart();
 
@@ -82,22 +82,30 @@ class Program
         Console.WriteLine($"Время десериализации JSON: {jsonDeserializationTime} ms");
     }
 
-    static string ReflectionSerialize(object obj)
+    public static string ReflectionSerialize<T>(T obj)
     {
-        Type type = obj.GetType();
+        if (obj == null) throw new ArgumentNullException(nameof(obj));
+
+        Type type = typeof(T);
         PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
         FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+
         StringBuilder sb = new StringBuilder();
+
+        // Собираем имена полей и свойств
         var names = fields.Select(p => $"{p.Name}").ToList();
         names.AddRange(properties.Select(p => p.Name).ToList());
         string fieldNames = string.Join(";", names) + ";";
-        
+
+        // Собираем значения полей и свойств
         var values = fields.Select(p => p.GetValue(obj)).ToList();
         values.AddRange(properties.Select(p => p.GetValue(obj)));
-        var fieldValues = string.Join(";", values) + ";";
+        string fieldValues = string.Join(";", values) + ";";
 
+        // Формируем строку
         sb.AppendLine(fieldNames);
         sb.AppendLine(fieldValues);
+
         return sb.ToString();
     }
 
